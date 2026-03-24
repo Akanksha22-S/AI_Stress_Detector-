@@ -64,17 +64,11 @@ cursor:pointer;
 <p>{{msg}}</p>
 
 <script>
-
 let message = "{{msg}}"
-
 if(message === "Signup Successful!"){
-
 alert("Signup Successful!")
-
-window.location.href="/detector.html"
-
+localStorage.removeItem("usedTrial")
 }
-
 </script>
 
 <p>
