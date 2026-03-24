@@ -151,8 +151,8 @@ def result():
 
 
 # ---------------- VIEW USERS (NEW - FOR DEPLOYED DB) ---------------- #
-@app.route("/view_users")
-def view_users():
+@app.route("/view_db")
+def view_db():
 
     conn = get_db()
     users = conn.execute("SELECT * FROM users").fetchall()
