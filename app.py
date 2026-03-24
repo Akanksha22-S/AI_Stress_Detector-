@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import os
 from stress_model import predict_stress
 
 app = Flask(__name__)
+app.secret_key = "secret123"
+
+
+# ---------------- DB INIT ---------------- #
 def init_db():
     if not os.path.exists("database.db"):
         conn = sqlite3.connect("database.db")
@@ -21,11 +25,10 @@ def init_db():
         conn.commit()
         conn.close()
 
-# ✅ CALL IT IMMEDIATELY
 init_db()
 
-# ---------------- DATABASE ---------------- #
 
+# ---------------- DB ---------------- #
 def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
@@ -33,21 +36,18 @@ def get_db():
 
 
 # ---------------- HOME ---------------- #
-
 @app.route("/")
 def home():
     return render_template("main.html")
 
 
 # ---------------- ABOUT ---------------- #
-
 @app.route("/about.html")
 def about():
     return render_template("about.html")
 
 
 # ---------------- LOGIN ---------------- #
-
 @app.route("/login.html", methods=["GET", "POST"])
 def login():
 
@@ -58,27 +58,24 @@ def login():
 
         conn = get_db()
 
-        try:
-            user = conn.execute(
-                "SELECT * FROM users WHERE email=? AND password=?",
-                (email, password)
-            ).fetchone()
+        user = conn.execute(
+            "SELECT * FROM users WHERE email=? AND password=?",
+            (email, password)
+        ).fetchone()
 
-            conn.close()
+        conn.close()
 
-            if user:
-                return render_template("login.html", msg="Login Successful!")
-            else:
-                return render_template("login.html", msg="Invalid Email or Password!")
-
-        except Exception as e:
-            conn.close()
-            return "<h3>Something went wrong</h3>"
+        if user:
+            session["user"] = email
+            session["trial_used"] = False
+            return redirect(url_for("detector"))
+        else:
+            return render_template("login.html", msg="Invalid Email or Password!")
 
     return render_template("login.html")
 
-# ---------------- SIGNUP ---------------- #
 
+# ---------------- SIGNUP ---------------- #
 @app.route("/signup.html", methods=["GET", "POST"])
 def signup():
 
@@ -98,48 +95,50 @@ def signup():
             conn.commit()
             conn.close()
 
-            return render_template("login.html", msg="Signup Successful!")
+            session["user"] = email
+            session["trial_used"] = False
+
+            return redirect(url_for("detector"))
 
         except sqlite3.IntegrityError:
             conn.close()
             return render_template("signup.html", msg="User already exists!")
 
-        except Exception as e:
-            conn.close()
-            return "<h3>Something went wrong</h3>"
-
     return render_template("signup.html")
 
 
 # ---------------- DETECTOR ---------------- #
-
 @app.route("/detector.html")
 def detector():
+
+    if "user" not in session:
+        if session.get("trial_used"):
+            return redirect(url_for("login"))
+
     return render_template("detector.html")
 
 
-# ---------------- RESULT ---------------- #
+# ---------------- CHECK LOGIN ---------------- #
+@app.route("/check_login")
+def check_login():
+    return {"logged_in": "user" in session}
 
+
+# ---------------- RESULT ---------------- #
 @app.route("/result.html", methods=["POST"])
 def result():
 
-    try:
-        accuracy = float(request.form.get("accuracy", 0))
-        speed = float(request.form.get("speed", 0))
-        backspaces = int(request.form.get("backspaces", 0))
-    except:
-        return "<h3>Error receiving data</h3>"
+    accuracy = float(request.form.get("accuracy", 0))
+    speed = float(request.form.get("speed", 0))
+    backspaces = int(request.form.get("backspaces", 0))
 
-    # 🔹 STRESS PREDICTION
     stress = predict_stress(accuracy, speed, backspaces)
 
-    # 🔹 CONFIDENCE SCORE
-    confidence = max(0, min(100, (accuracy - backspaces * 2)))
+    # MARK TRIAL ONLY FOR GUEST
+    if "user" not in session:
+        session["trial_used"] = True
 
-    if stress == "No Stress":
-        confidence = min(100, confidence + 10)
-    elif stress == "High Stress":
-        confidence = max(50, confidence)
+    confidence = max(0, min(100, (accuracy - backspaces * 2)))
 
     return render_template(
         "result.html",
@@ -152,6 +151,6 @@ def result():
 
 
 # ---------------- RUN ---------------- #
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
