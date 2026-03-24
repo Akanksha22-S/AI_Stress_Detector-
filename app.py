@@ -16,7 +16,7 @@ def init_db():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS users(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
+            name TEXT, 
             email TEXT UNIQUE,
             password TEXT
         )
@@ -148,6 +148,18 @@ def result():
         stress=stress,
         confidence=round(confidence, 2)
     )
+
+
+# ---------------- VIEW USERS (NEW - FOR DEPLOYED DB) ---------------- #
+@app.route("/view_users")
+def view_users():
+
+    conn = get_db()
+    users = conn.execute("SELECT * FROM users").fetchall()
+    conn.close()
+
+    # safer display (no password)
+    return "<br>".join([f"{u['name']} - {u['email']}" for u in users])
 
 
 # ---------------- RUN ---------------- #
