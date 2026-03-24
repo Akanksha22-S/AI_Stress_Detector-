@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Stress Result</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background-image:url("https://images.unsplash.com/photo-1506126613408-eca07ce68773");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+}
+
+.container{
+width:90%;
+margin:auto;
+padding:30px;
+background:rgba(255,255,255,0.85);
+border-radius:10px;
+margin-top:40px;
+}
+
+.section{
+background:white;
+padding:25px;
+margin-top:20px;
+border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+h1{
+text-align:center;
+color:#2563eb;
+}
+
+h2{
+color:#0f766e;
+}
+
+.metrics{
+display:flex;
+justify-content:space-around;
+margin-top:20px;
+}
+
+.metric{
+background:#e0f2fe;
+padding:20px;
+border-radius:8px;
+width:22%;
+text-align:center;
+}
+
+.metric h3{
+margin:5px 0;
+}
+
+.circle{
+width:120px;
+height:120px;
+border-radius:50%;
+background:#a5f3fc;
+margin:auto;
+animation:breath 4s infinite;
+}
+
+@keyframes breath{
+0%{transform:scale(1)}
+50%{transform:scale(1.4)}
+100%{transform:scale(1)}
+}
+
+.timerbox{
+text-align:center;
+margin-top:15px;
+}
+
+button{
+background:#2563eb;
+color:white;
+border:none;
+padding:10px 20px;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e40af;
+}
+
+audio{
+margin-top:10px;
+display:block;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Stress Detection Result</h1>
+
+
+<!-- Typing Metrics -->
+
+<div class="section">
+
+<h2>Typing Analysis</h2>
+
+<div class="metrics">
+
+<div class="metric">
+<h3>Accuracy</h3>
+<p>{{accuracy}}%</p>
+</div>
+
+<div class="metric">
+<h3>Speed</h3>
+<p>{{speed}} WPM</p>
+</div>
+
+<div class="metric">
+<h3>Backspaces</h3>
+<p>{{backspaces}}</p>
+</div>
+
+<div class="metric">
+<h3>Stress Level</h3>
+<p>{{stress}}</p>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- Graph -->
+
+<div class="section">
+
+<h2>Performance Graph</h2>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+
+<!-- Suggestions -->
+
+<div class="section">
+
+<h2>Stress Relief Suggestions</h2>
+
+<ul id="suggestions"></ul>
+
+</div>
+
+
+<!-- Breathing -->
+
+<div class="section">
+
+<h2>Breathing Exercise</h2>
+
+<div class="circle"></div>
+
+<p style="text-align:center">
+Inhale while circle expands and exhale while it shrinks.
+</p>
+
+</div>
+
+
+<!-- Timer -->
+
+<div class="section">
+
+<h2>Eye Blink Exercise</h2>
+
+<div class="timerbox">
+
+<h3 id="timer">10</h3>
+
+<button onclick="startTimer()">Start Timer</button>
+
+</div>
+
+</div>
+
+
+<!-- Music -->
+
+<div class="section">
+
+<h2>Relaxing Music</h2>
+
+<div id="music"></div>
+
+</div>
+
+</div>
+
+
+<script>
+
+// BACKEND VALUES
+let accuracy = {{accuracy}};
+let speed = {{speed}};
+let backspaces = {{backspaces}};
+let stress = "{{stress}}";
+
+
+// GRAPH
+new Chart(document.getElementById("chart"),{
+
+type:"bar",
+
+data:{
+labels:["Accuracy","Speed","Backspaces"],
+datasets:[{
+label:"Typing Metrics",
+data:[accuracy,speed,backspaces]
+}]
+}
+
+});
+
+
+// TIMER
+function startTimer(){
+
+let time = 10;
+let timer = document.getElementById("timer");
+
+let interval = setInterval(function(){
+
+if(time > 0){
+time--;
+timer.innerText = time;
+}else{
+clearInterval(interval);
+timer.innerText = "Done";
+}
+
+},1000);
+
+}
+
+
+// EMOJI METER (NO DESIGN CHANGE)
+let emojiMap = {
+"No Stress": "😄",
+"Low Stress": "🙂",
+"Medium Stress": "😐",
+"High Stress": "😫"
+};
+
+let textMap = {
+"No Stress": "Excellent! You are relaxed",
+"Low Stress": "Slight stress detected",
+"Medium Stress": "Moderate stress detected",
+"High Stress": "High stress detected!"
+};
+
+
+// CREATE ELEMENTS
+let emojiDiv = document.createElement("div");
+emojiDiv.style.textAlign = "center";
+emojiDiv.style.fontSize = "50px";
+emojiDiv.innerText = emojiMap[stress];
+
+let textDiv = document.createElement("div");
+textDiv.style.textAlign = "center";
+textDiv.style.fontWeight = "bold";
+textDiv.innerText = textMap[stress];
+
+// ADD BELOW METRICS
+document.querySelector(".metrics").after(emojiDiv, textDiv);
+
+
+// SUGGESTIONS
+let suggestionBox = document.getElementById("suggestions");
+
+let suggestions = {
+
+"No Stress":[
+"😊 You are doing great! Keep it up!"
+],
+
+"Low Stress":[
+"Take small breaks",
+"Relax your eyes"
+],
+
+"Medium Stress":[
+"Take deep breaths",
+"Go for a walk"
+],
+
+"High Stress":[
+"Meditate",
+"Take rest",
+"Relax your mind"
+]
+
+};
+
+suggestions[stress].forEach(item=>{
+let li=document.createElement("li");
+li.innerText=item;
+suggestionBox.appendChild(li);
+});
+
+
+// MUSIC
+let musicLinks = {
+
+"No Stress":"",
+"Low Stress":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+"Medium Stress":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+"High Stress":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+
+};
+
+if(stress==="No Stress"){
+document.getElementById("music").innerHTML =
+"<p style='text-align:center'>😊 Relaxed — no music needed</p>";
+}else{
+document.getElementById("music").innerHTML =
+`<audio controls src="${musicLinks[stress]}"></audio>`;
+}
+
+</script>
+
+</body>
+</html>

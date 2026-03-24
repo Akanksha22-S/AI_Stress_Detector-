@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Login</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#dbeafe;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:white;
+padding:40px;
+border-radius:10px;
+width:320px;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+background:#3b82f6;
+color:white;
+border:none;
+padding:10px 20px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>User Login</h2>
+
+<form method="POST">
+
+<input type="text" name="email" placeholder="Email / Mobile" required>
+
+<input type="password" name="password" placeholder="Password" required>
+
+<button type="submit">Login</button>
+
+</form>
+
+<p>{{msg}}</p>
+
+<script>
+
+let message = "{{msg}}"
+
+if(message === "Login Successful!"){
+
+alert("Login Successful!")
+
+window.location.href="/detector.html"
+
+}
+
+</script>
+
+<p>
+Don't have an account?
+<a href="/signup.html">Signup</a>
+</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Detector</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:url("https://images.unsplash.com/photo-1506126613408-eca07ce68773");
+background-size:cover;
+height:100vh;
+}
+
+.box{
+background:white;
+padding:30px;
+width:600px;
+margin:auto;
+margin-top:120px;
+}
+
+textarea{
+width:100%;
+height:150px;
+padding:10px;
+}
+
+button{
+padding:10px 20px;
+margin-top:15px;
+}
+
+</style>
+
+<script>
+
+let startTime = 0;
+let backspace = 0;
+let started = false;
+
+const paragraphs = [
+"Technology is transforming the world by improving communication and innovation.",
+"Artificial intelligence is changing the way humans interact with machines in daily life.",
+"Stress management is important for maintaining both mental and physical health.",
+"Typing accuracy and speed can reflect a person's focus and emotional condition.",
+"Regular breaks and relaxation techniques help improve productivity and reduce stress."
+];
+
+function loadParagraph(){
+let para = paragraphs[Math.floor(Math.random()*paragraphs.length)];
+document.getElementById("para").innerText = para;
+
+// RESET VALUES PROPERLY
+startTime = 0;
+backspace = 0;
+started = false;
+
+// CLEAR TEXTAREA
+document.getElementById("text").value = "";
+}
+
+function startTyping(){
+if(!started){
+startTime = Date.now();
+started = true;
+}
+}
+
+function keyTracker(e){
+
+// START TIMER ON FIRST KEY
+if(!started){
+startTyping();
+}
+
+// BACKSPACE COUNT (CORRECT)
+if(e.key === "Backspace"){
+backspace++;
+}
+
+}
+
+function calculate(){
+
+let text = document.getElementById("text").value.trim();
+let para = document.getElementById("para").innerText.trim();
+
+// WORD BASED ACCURACY (STRICT MATCH)
+let words = text.split(/\s+/);
+let pwords = para.split(/\s+/);
+
+let correct = 0;
+
+for(let i=0;i<Math.min(words.length, pwords.length);i++){
+if(words[i] === pwords[i]){
+correct++;
+}
+}
+
+let accuracy = (correct / pwords.length) * 100;
+
+// TIME
+let time = (Date.now() - startTime) / 60000;
+
+// SPEED (WPM)
+let speed = words.length / time;
+
+// HANDLE EDGE CASES
+if(!isFinite(speed) || speed < 0) speed = 0;
+if(!isFinite(accuracy) || accuracy < 0) accuracy = 0;
+
+// SEND TO BACKEND
+let form = document.createElement("form");
+
+form.method = "POST";
+form.action = "/result.html";
+
+form.innerHTML = `
+<input type="hidden" name="accuracy" value="${accuracy}">
+<input type="hidden" name="speed" value="${speed}">
+<input type="hidden" name="backspaces" value="${backspace}">
+`;
+
+document.body.appendChild(form);
+form.submit();
+
+}
+
+// LOAD PARAGRAPH
+window.onload = loadParagraph;
+
+</script>
+
+</head>
+
+<body onkeydown="keyTracker(event)">
+
+<div class="box">
+
+<h2>Typing Stress Detection</h2>
+
+<p id="para"></p>
+
+<textarea id="text" placeholder="Type here" onkeydown="startTyping()"></textarea>
+
+<br>
+
+<button onclick="calculate()">Submit</button>
+
+</div>
+
+</body>
+</html>
