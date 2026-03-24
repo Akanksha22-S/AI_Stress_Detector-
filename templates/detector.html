@@ -6,7 +6,6 @@
 <title>Detector</title>
 
 <style>
-
 body{
 font-family:Arial;
 text-align:center;
@@ -33,7 +32,6 @@ button{
 padding:10px 20px;
 margin-top:15px;
 }
-
 </style>
 
 <script>
@@ -50,16 +48,35 @@ const paragraphs = [
 "Regular breaks and relaxation techniques help improve productivity and reduce stress."
 ];
 
+window.onload = function(){
+
+fetch("/check_login")
+.then(res => res.json())
+.then(data => {
+
+    if(data.logged_in){
+        loadParagraph();
+        return;
+    }
+
+    if(localStorage.getItem("usedTrial") === "true"){
+        alert("Your free trial is completed. Please login or signup.");
+        window.location.href = "/login.html";
+        return;
+    }
+
+    loadParagraph();
+});
+};
+
 function loadParagraph(){
 let para = paragraphs[Math.floor(Math.random()*paragraphs.length)];
 document.getElementById("para").innerText = para;
 
-// RESET VALUES PROPERLY
 startTime = 0;
 backspace = 0;
 started = false;
 
-// CLEAR TEXTAREA
 document.getElementById("text").value = "";
 }
 
@@ -71,17 +88,12 @@ started = true;
 }
 
 function keyTracker(e){
-
-// START TIMER ON FIRST KEY
 if(!started){
 startTyping();
 }
-
-// BACKSPACE COUNT (CORRECT)
 if(e.key === "Backspace"){
 backspace++;
 }
-
 }
 
 function calculate(){
@@ -89,7 +101,6 @@ function calculate(){
 let text = document.getElementById("text").value.trim();
 let para = document.getElementById("para").innerText.trim();
 
-// WORD BASED ACCURACY (STRICT MATCH)
 let words = text.split(/\s+/);
 let pwords = para.split(/\s+/);
 
@@ -103,35 +114,38 @@ correct++;
 
 let accuracy = (correct / pwords.length) * 100;
 
-// TIME
 let time = (Date.now() - startTime) / 60000;
 
-// SPEED (WPM)
 let speed = words.length / time;
 
-// HANDLE EDGE CASES
 if(!isFinite(speed) || speed < 0) speed = 0;
 if(!isFinite(accuracy) || accuracy < 0) accuracy = 0;
 
-// SEND TO BACKEND
-let form = document.createElement("form");
+// MARK TRIAL ONLY FOR GUEST
+fetch("/check_login")
+.then(res => res.json())
+.then(data => {
 
-form.method = "POST";
-form.action = "/result.html";
+    if(!data.logged_in){
+        localStorage.setItem("usedTrial", "true");
+    }
 
-form.innerHTML = `
-<input type="hidden" name="accuracy" value="${accuracy}">
-<input type="hidden" name="speed" value="${speed}">
-<input type="hidden" name="backspaces" value="${backspace}">
-`;
+    let form = document.createElement("form");
 
-document.body.appendChild(form);
-form.submit();
+    form.method = "POST";
+    form.action = "/result.html";
+
+    form.innerHTML = `
+    <input type="hidden" name="accuracy" value="${accuracy}">
+    <input type="hidden" name="speed" value="${speed}">
+    <input type="hidden" name="backspaces" value="${backspace}">
+    `;
+
+    document.body.appendChild(form);
+    form.submit();
+});
 
 }
-
-// LOAD PARAGRAPH
-window.onload = loadParagraph;
 
 </script>
 
