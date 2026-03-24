@@ -158,8 +158,7 @@ def view_db():
     users = conn.execute("SELECT * FROM users").fetchall()
     conn.close()
 
-    # safer display (no password)
-    return "<br>".join([f"{u['name']} - {u['email']}" for u in users])
+    return render_template("view_db.html", users=users)
 
 
 # ---------------- RUN ---------------- #
