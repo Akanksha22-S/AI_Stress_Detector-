@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Users Table</title>
+
+<style>
+body{
+font-family:monospace;
+background:#111;
+color:#0f0;
+padding:30px;
+}
+
+table{
+border-collapse:collapse;
+margin:auto;
+}
+
+td, th{
+border:1px solid #0f0;
+padding:8px 15px;
+}
+
+h2{
+text-align:center;
+color:#0f0;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>================ USERS TABLE ================</h2>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Password</th>
+</tr>
+
+{% for row in users %}
+<tr>
+<td>{{ row[0] }}</td>
+<td>{{ row[1] }}</td>
+<td>{{ row[2] }}</td>
+<td>{{ row[3] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>
